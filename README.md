@@ -5,6 +5,7 @@
 Generate personalized letter + name engravings, export STL/3MF, and open directly in BambuStudio — all in one click.
 
 ![Platform](https://img.shields.io/badge/platform-Windows-blue)
+![Version](https://img.shields.io/badge/version-1.1.0-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Electron](https://img.shields.io/badge/Electron-42-47848F)
 
@@ -19,10 +20,11 @@ Generate personalized letter + name engravings, export STL/3MF, and open directl
 ## Features
 
 - **Parametric generation** — large initial letter + engraved name, fully customizable
-- **15+ Google Fonts** bundled (Bebas Neue, Anton, Orbitron, Pacifico, Lobster…)
+- **18 fonts bundled** (Bebas Neue, Anton, Orbitron, STIX Two Math, Pacifico, Lobster…)
 - **Real-time 3D preview** — Bambu Lab bed plate, accurate colors
-- **Export STL or 3MF** — with optional BambuStudio slicer settings (fuzzy skin, ironing)
+- **Export STL or 3MF** — with optional BambuStudio slicer settings (fuzzy skin, ironing, chamfer)
 - **Open directly in BambuStudio** — one click
+- **🌐 FR / EN interface** — language switcher in the header, preference saved automatically
 - **Auto-update** — checks for new OpenSCAD binary on launch
 
 ## Requirements
@@ -32,7 +34,7 @@ Generate personalized letter + name engravings, export STL/3MF, and open directl
 
 ## Installation
 
-Download `NameForge Setup 1.0.0.exe` from [Releases](https://github.com/stormz85ia/NameForge/releases) and run it.
+Download `NameForge Setup 1.1.0.exe` from [Releases](https://github.com/stormz85ia/NameForge/releases) and run it.
 
 > **First launch:** NameForge will download OpenSCAD automatically (~70 MB).
 
@@ -50,6 +52,7 @@ npm run dist:win            # production build → release/
 - Electron 42 + Vite 8 + React 19 + Tailwind 4
 - Three.js 0.184 (3D preview)
 - OpenSCAD 2021 (parametric model generation)
+- react-i18next (FR/EN localization)
 - electron-builder 26
 
 ## License
