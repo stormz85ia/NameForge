@@ -1,0 +1,130 @@
+{
+  "header": {
+    "tagline": "3D Parametric Generator",
+    "updateAvailable": "v{{version}} available",
+    "updateError": "Update check failed",
+    "upToDate": "Up to date",
+    "checking": "Checking…",
+    "updates": "Updates"
+  },
+  "sidebar": {
+    "title": "Model parameters",
+    "groups": {
+      "text": "Text",
+      "dimensions": "Dimensions (mm)",
+      "finitions": "Print finishes",
+      "colors": "Print colors"
+    },
+    "fields": {
+      "name": "First name / Text",
+      "fontBase": "Font — base (large letter)",
+      "fontCursive": "Font — cursive (name)",
+      "uppercase": "Capitalize first letter",
+      "showBase": "Show base (large letter)",
+      "showName": "Show name",
+      "layerHeight": "Layer height",
+      "layerHeightHint": "Affects minimum size warnings",
+      "baseHeight": "Base height",
+      "baseHeightHint": "Thickness of the large letter",
+      "engravingDepth": "Engraving depth",
+      "letterSize": "Base letter size",
+      "nameSize": "Name size",
+      "nameSizeHint": "Reduce if name exceeds the base letter",
+      "nameRelief": "Name relief thickness",
+      "nameReliefHint": "If name is solid",
+      "offsetX": "Name horizontal offset (X)",
+      "offsetY": "Name vertical offset (Y)",
+      "tolerance": "Engraving tolerance",
+      "cutMargin": "Bottom edge cut margin",
+      "cutBase": "Bottom cut",
+      "cutBaseHint": "0 = intact curve · 30 = flat top",
+      "fuzzySkin": "Fuzzy Skin (rough texture)",
+      "fuzzyThickness": "Fuzzy thickness",
+      "fuzzyThicknessHint": "mm — texture amplitude",
+      "fuzzyPointDist": "Point distance",
+      "fuzzyPointDistHint": "mm — texture density",
+      "ironing": "Top surface ironing",
+      "slicerBanner": "ℹ️ Slicer settings — embedded in <1>3MF</1> export for BambuStudio. Not visible in 3D preview.",
+      "chamfer": "Top edge chamfer",
+      "chamferSize": "Chamfer size",
+      "chamferSizeHint": "mm — 45° bevel at top of letter",
+      "colorBase": "Base color",
+      "colorBaseHint": "Filament 1 (large letter)",
+      "colorName": "Name color",
+      "colorNameHint": "Filament 2 (text)"
+    },
+    "ratings": {
+      "safe": "Safe for printing",
+      "warn": "OK at large size (>12mm)",
+      "danger": "Thin strokes — increase size"
+    },
+    "fontHints": {
+      "bebasNeue": "Condensed all-caps, wide strokes — perfect for engraving",
+      "anton": "Impact-like, ultra bold — excellent legibility",
+      "blackOpsOne": "Military stencil, very thick — perfect printing",
+      "archivoBlack": "Geometric ultra bold — massive strokes",
+      "russoOne": "Industrial / military, bold sans-serif",
+      "orbitron": "Sci-fi / tech, excellent for gaming nameplates",
+      "bungee": "Chunky display, designed for signs — top print",
+      "oswald": "Condensed sans-serif, naturally dense and legible",
+      "righteous": "Retro sport, thick rounded — regular strokes",
+      "stixTwoMath": "Math serif, thin strokes — large size required (≥20mm)",
+      "pacifico": "Thick cursive, perfect for printing",
+      "lobster": "Styled script, well-defined strokes",
+      "kaushanScript": "Bold cursive, excellent legibility in 3D",
+      "permanentMarker": "Thick marker, organic and dynamic look",
+      "comfortaa": "Rounded geometric, modern and legible",
+      "dancingScript": "Elegant cursive — prefer ≥ 12mm"
+    },
+    "actions": {
+      "generate": "Generate",
+      "generating": "Generating…",
+      "openBambu": "Open in BambuStudio",
+      "openingBambu": "Opening…"
+    },
+    "warnings": {
+      "tooSmall": "⚠️ {{size}}mm — too small (recommended min: {{min}}mm at {{layer}}mm layer)",
+      "thinFont": "⚠️ {{size}}mm with thin serif font — risk of strokes < 0.4mm. Try ≥ {{min}}mm or change font.",
+      "smallSize": "⚠️ {{size}}mm — small size at {{layer}}mm layer height. Check preview."
+    }
+  },
+  "preview": {
+    "generating": "Generating OpenSCAD…",
+    "generatingHint": "May take 5–15 seconds",
+    "emptyHint_before": "Click ",
+    "emptyHintAction": "Generate",
+    "emptyHint_after": " to create the model",
+    "rotate": "Click + drag → Rotate",
+    "zoom": "Scroll → Zoom",
+    "pan": "Right click + drag → Pan"
+  },
+  "status": {
+    "ready": "Ready",
+    "generating": "Generating…",
+    "generated": "STL generated successfully",
+    "error": "Error: {{msg}}",
+    "empty": "Error: First name / Text field is empty",
+    "generatingFormat": "Generating {{format}} for export…",
+    "3mfReady": "3MF ready — BambuStudio settings embedded",
+    "3mfNoPatch": "3MF generated (BambuStudio patch skipped)",
+    "saved": "File saved: {{fileName}}",
+    "saveError": "Save error: {{msg}}",
+    "bambuGenerating": "Generating STL for BambuStudio…",
+    "bambuOpened": "BambuStudio opened with models",
+    "bambuError": "BambuStudio: {{msg}}",
+    "nothingToGenerate": "Nothing to generate: Base and Name are both disabled",
+    "openScadError": "OpenSCAD error",
+    "preview3dError": "3D preview error: {{msg}}",
+    "preview3dUnavailable": "3D preview unavailable. Retry after generation.",
+    "saveDialogTitle": "Save {{format}} model"
+  },
+  "errors": {
+    "bambuNotFound": "BambuStudio not found. Check installation in Program Files.",
+    "bambuPathSuspect": "Suspicious BambuStudio path — access denied.",
+    "bambuNoStl": "No valid STL files to open in BambuStudio.",
+    "windowClosed": "Main window closed.",
+    "openscadNotFound": "OpenSCAD not found in resources. Run \"npm run download-openscad\".",
+    "openscadTimeout": "OpenSCAD: timeout (120 s) — generation cancelled.",
+    "scadNotFound": "SCAD file not found."
+  }
+}

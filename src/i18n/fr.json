@@ -1,0 +1,130 @@
+{
+  "header": {
+    "tagline": "3D Parametric Generator",
+    "updateAvailable": "v{{version}} disponible",
+    "updateError": "Vérification impossible",
+    "upToDate": "Version à jour",
+    "checking": "Vérification…",
+    "updates": "Mises à jour"
+  },
+  "sidebar": {
+    "title": "Paramètres du modèle",
+    "groups": {
+      "text": "Texte",
+      "dimensions": "Dimensions (mm)",
+      "finitions": "Finitions d'impression",
+      "colors": "Couleurs d'impression"
+    },
+    "fields": {
+      "name": "Prénom / Texte",
+      "fontBase": "Police — base (grande lettre)",
+      "fontCursive": "Police — cursive (nom)",
+      "uppercase": "Majuscule initiale",
+      "showBase": "Afficher la base (grande lettre)",
+      "showName": "Afficher le nom",
+      "layerHeight": "Hauteur de couche (layer height)",
+      "layerHeightHint": "Affecte les avertissements de taille minimum",
+      "baseHeight": "Hauteur de la base",
+      "baseHeightHint": "Épaisseur de la grande lettre",
+      "engravingDepth": "Profondeur de gravure",
+      "letterSize": "Taille lettre de base",
+      "nameSize": "Taille du nom",
+      "nameSizeHint": "Réduire si le nom dépasse la lettre de base",
+      "nameRelief": "Épaisseur nom en relief",
+      "nameReliefHint": "Si nom en solide",
+      "offsetX": "Décalage horizontal du nom (X)",
+      "offsetY": "Décalage vertical du nom (Y)",
+      "tolerance": "Tolérance gravure",
+      "cutMargin": "Marge coupe bord inférieur",
+      "cutBase": "Coupe du bas",
+      "cutBaseHint": "0 = courbe intacte · 30 = plat haut",
+      "fuzzySkin": "Fuzzy Skin (texture rugueuse)",
+      "fuzzyThickness": "Épaisseur Fuzzy",
+      "fuzzyThicknessHint": "mm — amplitude de la texture",
+      "fuzzyPointDist": "Distance entre points",
+      "fuzzyPointDistHint": "mm — densité de la texture",
+      "ironing": "Ironing surface haute",
+      "slicerBanner": "ℹ️ Réglages slicer — intégrés dans l'export <1>3MF</1> pour BambuStudio. Non visibles dans la preview 3D.",
+      "chamfer": "Chanfrein bord supérieur",
+      "chamferSize": "Taille chanfrein",
+      "chamferSizeHint": "mm — biseau à 45° en haut de la lettre",
+      "colorBase": "Couleur de la base",
+      "colorBaseHint": "Filament 1 (grande lettre)",
+      "colorName": "Couleur du nom",
+      "colorNameHint": "Filament 2 (texte)"
+    },
+    "ratings": {
+      "safe": "Sûr pour impression",
+      "warn": "Ok en grande taille (>12mm)",
+      "danger": "Strokes fins — augmenter la taille"
+    },
+    "fontHints": {
+      "bebasNeue": "Condensé tout-caps, strokes larges — parfait gravure",
+      "anton": "Impact-like, ultra bold — excellente lisibilité",
+      "blackOpsOne": "Stencil militaire, très épais — impression parfaite",
+      "archivoBlack": "Géométrique ultra bold — strokes massifs",
+      "russoOne": "Industriel / militaire, sans-serif gras",
+      "orbitron": "Sci-fi / tech, excellent pour plaques gaming",
+      "bungee": "Chunky display, conçu pour enseignes — top print",
+      "oswald": "Condensé sans-serif, naturellement dense et lisible",
+      "righteous": "Rétro sport, arrondis épais — strokes réguliers",
+      "stixTwoMath": "Mathématique serif, strokes fins — grande taille requise (≥20mm)",
+      "pacifico": "Cursive épaisse, parfaite pour l'impression",
+      "lobster": "Script stylisé, strokes bien définis",
+      "kaushanScript": "Cursive bold, excellente lisibilité en 3D",
+      "permanentMarker": "Feutre épais, rendu organique et dynamique",
+      "comfortaa": "Géométrique arrondie, moderne et lisible",
+      "dancingScript": "Cursive élégante — préférer ≥ 12mm"
+    },
+    "actions": {
+      "generate": "Générer",
+      "generating": "Génération…",
+      "openBambu": "Ouvrir dans BambuStudio",
+      "openingBambu": "Ouverture…"
+    },
+    "warnings": {
+      "tooSmall": "⚠️ {{size}}mm — trop petit (min recommandé : {{min}}mm à {{layer}}mm layer)",
+      "thinFont": "⚠️ {{size}}mm avec police à empattements fins — risque strokes < 0.4mm. Tenter ≥ {{min}}mm ou changer de police.",
+      "smallSize": "⚠️ {{size}}mm — petite taille à {{layer}}mm layer height. Vérifier l'aperçu."
+    }
+  },
+  "preview": {
+    "generating": "Génération OpenSCAD…",
+    "generatingHint": "Peut prendre 5–15 secondes",
+    "emptyHint_before": "Cliquez sur ",
+    "emptyHintAction": "Générer",
+    "emptyHint_after": " pour créer le modèle",
+    "rotate": "Clic + drag → Rotation",
+    "zoom": "Scroll → Zoom",
+    "pan": "Clic droit + drag → Pan"
+  },
+  "status": {
+    "ready": "Prêt",
+    "generating": "Génération en cours…",
+    "generated": "STL généré avec succès",
+    "error": "Erreur : {{msg}}",
+    "empty": "Erreur : le champ Prénom / Texte est vide",
+    "generatingFormat": "Génération {{format}} pour export…",
+    "3mfReady": "3MF prêt — réglages BambuStudio embarqués",
+    "3mfNoPatch": "3MF généré (patch BambuStudio ignoré)",
+    "saved": "Fichier enregistré : {{fileName}}",
+    "saveError": "Erreur sauvegarde : {{msg}}",
+    "bambuGenerating": "Génération STL pour BambuStudio…",
+    "bambuOpened": "BambuStudio ouvert avec les modèles",
+    "bambuError": "BambuStudio : {{msg}}",
+    "nothingToGenerate": "Rien à générer : Base et Nom sont tous les deux désactivés",
+    "openScadError": "Erreur OpenSCAD",
+    "preview3dError": "Erreur aperçu 3D : {{msg}}",
+    "preview3dUnavailable": "Aperçu 3D indisponible. Réessayez après génération.",
+    "saveDialogTitle": "Enregistrer le modèle {{format}}"
+  },
+  "errors": {
+    "bambuNotFound": "BambuStudio introuvable. Vérifiez l'installation dans Program Files.",
+    "bambuPathSuspect": "Chemin BambuStudio suspect — accès refusé.",
+    "bambuNoStl": "Aucun fichier STL valide à ouvrir dans BambuStudio.",
+    "windowClosed": "Fenêtre principale fermée.",
+    "openscadNotFound": "OpenSCAD introuvable dans les ressources. Lancez \"npm run download-openscad\".",
+    "openscadTimeout": "OpenSCAD : délai dépassé (120 s) — génération annulée.",
+    "scadNotFound": "Fichier SCAD introuvable."
+  }
+}
