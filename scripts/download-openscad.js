@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Script de développement : télécharge OpenSCAD portable dans resources/openscad/
+// Dev script: downloads portable OpenSCAD into resources/openscad/
 // Usage: node scripts/download-openscad.js [--version 2024.05.12]
 
 'use strict';
@@ -46,20 +46,20 @@ async function main() {
   const config = PLATFORM_CONFIG[platform];
 
   if (!config) {
-    console.error(`Plateforme non supportée : ${platform}`);
+    console.error(`Unsupported platform: ${platform}`);
     process.exit(1);
   }
 
-  console.log(`\n🔍 Récupération de la dernière version OpenSCAD…`);
+  console.log(`\n🔍 Fetching latest OpenSCAD version…`);
   const release = await fetchJson(GITHUB_API);
 
   // Null safety — GitHub API may return unexpected shapes
   if (!release || !release.tag_name) {
-    console.error('❌ Réponse GitHub API invalide (tag_name manquant)');
+    console.error('❌ Invalid GitHub API response (missing tag_name)');
     process.exit(1);
   }
   if (!Array.isArray(release.assets)) {
-    console.error('❌ Réponse GitHub API invalide (assets manquants)');
+    console.error('❌ Invalid GitHub API response (missing assets)');
     process.exit(1);
   }
 
@@ -68,8 +68,8 @@ async function main() {
 
   const asset = release.assets.find((a) => config.assetMatch(a.name));
   if (!asset) {
-    console.error(`❌ Aucun asset trouvé pour ${platform} dans la release.`);
-    console.error('   Assets disponibles :');
+    console.error(`❌ No asset found for ${platform} in the release.`);
+    console.error('   Available assets:');
     release.assets.forEach((a) => console.error(`   - ${a.name}`));
     process.exit(1);
   }
@@ -77,7 +77,7 @@ async function main() {
   console.log(`📦 Asset : ${asset.name}`);
 
   const tmpFile = path.join(os.tmpdir(), asset.name);
-  console.log(`⬇️  Téléchargement → ${tmpFile}`);
+  console.log(`⬇️  Downloading → ${tmpFile}`);
   await downloadFile(asset.browser_download_url, tmpFile);
 
   fs.mkdirSync(DEST_DIR, { recursive: true });
@@ -87,7 +87,7 @@ async function main() {
   // but logging the hash lets users/auditors confirm integrity manually.
   const sha256 = await computeSHA256(tmpFile);
   console.log(`🔑 SHA256 : ${sha256}`);
-  console.log(`   (vérifiez manuellement sur https://openscad.org/downloads.html si disponible)`);
+  console.log(`   (verify manually at https://openscad.org/downloads.html if available)`);
 
   console.log(`📂 Extraction → ${DEST_DIR}`);
   await config.extractFn(tmpFile, DEST_DIR, config.binary);
@@ -96,20 +96,20 @@ async function main() {
   // Guards against silent extraction failures (corrupt archive, partial download).
   const extractedBin = path.join(DEST_DIR, config.binary);
   if (!fs.existsSync(extractedBin)) {
-    console.error(`❌ Binaire introuvable après extraction : ${extractedBin}`);
+    console.error(`❌ Binary not found after extraction: ${extractedBin}`);
     process.exit(1);
   }
   const binStat = fs.statSync(extractedBin);
   if (binStat.size === 0) {
-    console.error(`❌ Binaire extrait vide (0 octets) : ${extractedBin}`);
+    console.error(`❌ Extracted binary is empty (0 bytes): ${extractedBin}`);
     process.exit(1);
   }
-  console.log(`   Binaire vérifié : ${binStat.size.toLocaleString()} octets`);
+  console.log(`   Binary verified: ${binStat.size.toLocaleString()} bytes`);
 
   // Write version file
   fs.writeFileSync(path.join(DEST_DIR, 'VERSION'), version, 'utf8');
 
-  console.log(`\n✅ OpenSCAD ${version} installé dans resources/openscad/`);
+  console.log(`\n✅ OpenSCAD ${version} installed in resources/openscad/`);
   console.log(`   Binaire : ${path.join(DEST_DIR, config.binary)}\n`);
 }
 
@@ -201,7 +201,7 @@ function fetchJson(url) {
         res.on('data', (c) => {
           totalBytes += c.length;
           if (totalBytes > MAX_API_BYTES) {
-            res.destroy(new Error('GitHub API response trop grande (> 1MB)'));
+            res.destroy(new Error('GitHub API response too large (> 1MB)'));
             return;
           }
           chunks.push(c);
@@ -210,7 +210,7 @@ function fetchJson(url) {
           try {
             resolve(JSON.parse(Buffer.concat(chunks).toString('utf8')));
           } catch (e) {
-            reject(new Error(`Réponse GitHub API non-JSON : ${e.message}`));
+            reject(new Error(`GitHub API non-JSON response: ${e.message}`));
           }
         });
         res.on('error', reject);
@@ -232,7 +232,7 @@ async function downloadFile(url, dest) {
   res.on('data', (chunk) => {
     received += chunk.length;
     if (received > MAX_DOWNLOAD_BYTES) {
-      res.destroy(new Error('Téléchargement trop grand (> 500 MB) — abandon'));
+      res.destroy(new Error('Download too large (> 500 MB) — aborting'));
       return;
     }
     if (total) {
@@ -262,16 +262,16 @@ const ALLOWED_DOWNLOAD_HOSTS = new Set([
 function assertAllowedDownloadHost(url) {
   let hostname;
   try { hostname = new URL(url).hostname; }
-  catch { throw new Error(`URL de redirection invalide : ${url}`); }
+  catch { throw new Error(`Invalid redirect URL: ${url}`); }
   if (!ALLOWED_DOWNLOAD_HOSTS.has(hostname)) {
-    throw new Error(`Hôte de redirection non autorisé : ${hostname}`);
+    throw new Error(`Unauthorized redirect host: ${hostname}`);
   }
 }
 
 // Follow HTTPS-only redirects, return the response stream of the final URL
 function followHttpsRedirects(url, redirectCount = 0, MAX_REDIRECTS = 5) {
   if (!url || !String(url).startsWith('https://')) {
-    return Promise.reject(new Error(`Redirection non-HTTPS refusée : ${url}`));
+    return Promise.reject(new Error(`Non-HTTPS redirect rejected: ${url}`));
   }
   try { assertAllowedDownloadHost(url); } catch (e) { return Promise.reject(e); }
   return new Promise((resolve, reject) => {

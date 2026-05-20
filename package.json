@@ -1,6 +1,6 @@
 {
   "name": "nameforge",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "private": true,
   "description": "Générateur de modèles 3D paramétriques pour MakerWorld",
   "main": "main.js",
@@ -28,8 +28,10 @@
     "cross-env": "^10.1.0",
     "electron": "^42.1.0",
     "electron-builder": "^26.8.1",
+    "i18next": "^26.2.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
+    "react-i18next": "^17.0.8",
     "sharp": "^0.34.5",
     "tailwindcss": "^4.3.0",
     "vite": "^8.0.13",

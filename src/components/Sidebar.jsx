@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation, Trans } from 'react-i18next';
 import ParamGroup, {
   Field,
   NumberInput,
@@ -18,54 +19,59 @@ import ParamGroup, {
 // All fonts verified present as TTF in resources/fonts/.
 // Variable fonts ([wght]) use style=Regular — safe across all OpenSCAD versions.
 // Montserrat[wght] and Nunito[wght] excluded: base instance is Thin/ExtraLight → too fine for print.
+// hintKey maps to sidebar.fontHints.<key> in translation files.
 const FONT_BASE_OPTIONS = [
-  { value: 'Bebas Neue:style=Regular',   label: 'Bebas Neue',      rating: 'safe',   hint: 'Condensé tout-caps, strokes larges — parfait gravure' },
-  { value: 'Anton:style=Regular',        label: 'Anton',            rating: 'safe',   hint: 'Impact-like, ultra bold — excellente lisibilité' },
-  { value: 'Black Ops One:style=Regular', label: 'Black Ops One',  rating: 'safe',   hint: 'Stencil militaire, très épais — impression parfaite' },
-  { value: 'Archivo Black:style=Regular', label: 'Archivo Black',  rating: 'safe',   hint: 'Géométrique ultra bold — strokes massifs' },
-  { value: 'Russo One:style=Regular',    label: 'Russo One',        rating: 'safe',   hint: 'Industriel / militaire, sans-serif gras' },
-  { value: 'Orbitron:style=Regular',     label: 'Orbitron',         rating: 'safe',   hint: 'Sci-fi / tech, excellent pour plaques gaming' },
-  { value: 'Bungee:style=Regular',       label: 'Bungee',           rating: 'safe',   hint: 'Chunky display, conçu pour enseignes — top print' },
-  { value: 'Oswald:style=Regular',       label: 'Oswald',           rating: 'safe',   hint: 'Condensé sans-serif, naturellement dense et lisible' },
-  { value: 'Righteous:style=Regular',    label: 'Righteous',        rating: 'safe',   hint: 'Rétro sport, arrondis épais — strokes réguliers' },
-  { value: 'STIX Two Math:style=Regular', label: 'STIX Two Math',   rating: 'danger', hint: 'Mathématique serif, strokes fins — grande taille requise (≥20mm)' },
+  { value: 'Bebas Neue:style=Regular',    label: 'Bebas Neue',      rating: 'safe',   hintKey: 'bebasNeue' },
+  { value: 'Anton:style=Regular',         label: 'Anton',           rating: 'safe',   hintKey: 'anton' },
+  { value: 'Black Ops One:style=Regular', label: 'Black Ops One',   rating: 'safe',   hintKey: 'blackOpsOne' },
+  { value: 'Archivo Black:style=Regular', label: 'Archivo Black',   rating: 'safe',   hintKey: 'archivoBlack' },
+  { value: 'Russo One:style=Regular',     label: 'Russo One',       rating: 'safe',   hintKey: 'russoOne' },
+  { value: 'Orbitron:style=Regular',      label: 'Orbitron',        rating: 'safe',   hintKey: 'orbitron' },
+  { value: 'Bungee:style=Regular',        label: 'Bungee',          rating: 'safe',   hintKey: 'bungee' },
+  { value: 'Oswald:style=Regular',        label: 'Oswald',          rating: 'safe',   hintKey: 'oswald' },
+  { value: 'Righteous:style=Regular',     label: 'Righteous',       rating: 'safe',   hintKey: 'righteous' },
+  { value: 'STIX Two Math:style=Regular', label: 'STIX Two Math',   rating: 'danger', hintKey: 'stixTwoMath' },
 ];
 
 const FONT_CORSIVO_OPTIONS = [
-  { value: 'Pacifico:style=Regular',         label: 'Pacifico',         rating: 'safe',   hint: 'Cursive épaisse, parfaite pour l\'impression' },
-  { value: 'Lobster:style=Regular',          label: 'Lobster',           rating: 'safe',   hint: 'Script stylisé, strokes bien définis' },
-  { value: 'Kaushan Script:style=Regular',   label: 'Kaushan Script',    rating: 'safe',   hint: 'Cursive bold, excellente lisibilité en 3D' },
-  { value: 'Permanent Marker:style=Regular', label: 'Permanent Marker',  rating: 'safe',   hint: 'Feutre épais, rendu organique et dynamique' },
-  { value: 'Comfortaa:style=Regular',        label: 'Comfortaa',         rating: 'safe',   hint: 'Géométrique arrondie, moderne et lisible' },
-  { value: 'Dancing Script:style=Regular',   label: 'Dancing Script',    rating: 'warn',   hint: 'Cursive élégante — préférer ≥ 12mm' },
+  { value: 'Pacifico:style=Regular',         label: 'Pacifico',         rating: 'safe', hintKey: 'pacifico' },
+  { value: 'Lobster:style=Regular',          label: 'Lobster',          rating: 'safe', hintKey: 'lobster' },
+  { value: 'Kaushan Script:style=Regular',   label: 'Kaushan Script',   rating: 'safe', hintKey: 'kaushanScript' },
+  { value: 'Permanent Marker:style=Regular', label: 'Permanent Marker', rating: 'safe', hintKey: 'permanentMarker' },
+  { value: 'Comfortaa:style=Regular',        label: 'Comfortaa',        rating: 'safe', hintKey: 'comfortaa' },
+  { value: 'Dancing Script:style=Regular',   label: 'Dancing Script',   rating: 'warn', hintKey: 'dancingScript' },
 ];
 
-const RATING_BADGE = {
-  safe:   { icon: '✅', color: 'text-green-400',  bg: 'bg-green-400/10', label: 'Sûr pour impression' },
-  warn:   { icon: '⚠️', color: 'text-yellow-400', bg: 'bg-yellow-400/10', label: 'Ok en grande taille (>12mm)' },
-  danger: { icon: '❌', color: 'text-red-400',    bg: 'bg-red-400/10',   label: 'Strokes fins — augmenter la taille' },
+// Combined font list — module-level constant, avoids spreading on every render
+const ALL_FONT_OPTIONS = [...FONT_BASE_OPTIONS, ...FONT_CORSIVO_OPTIONS];
+
+const RATING_COLORS = {
+  safe:   { color: 'text-green-400',  bg: 'bg-green-400/10' },
+  warn:   { color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
+  danger: { color: 'text-red-400',    bg: 'bg-red-400/10' },
 };
+const RATING_ICONS = { safe: '✅', warn: '⚠️', danger: '❌' };
 
 function FontBadge({ options, value }) {
+  const { t } = useTranslation();
   const found = options.find((o) => o.value === value);
   if (!found) return null;
-  const b = RATING_BADGE[found.rating];
+  const { color, bg } = RATING_COLORS[found.rating];
   return (
-    <div className={`mt-1 flex items-start gap-1.5 rounded px-2 py-1 ${b.bg}`}>
-      <span className="text-[11px] leading-[1.4]">{b.icon}</span>
-      <span className={`text-[11px] leading-[1.4] ${b.color}`}>
-        {b.label}
-        {found.hint && <span className="text-white/40"> — {found.hint}</span>}
+    <div className={`mt-1 flex items-start gap-1.5 rounded px-2 py-1 ${bg}`}>
+      <span className="text-[11px] leading-[1.4]">{RATING_ICONS[found.rating]}</span>
+      <span className={`text-[11px] leading-[1.4] ${color}`}>
+        {t(`sidebar.ratings.${found.rating}`)}
+        {found.hintKey && (
+          <span className="text-white/40"> — {t(`sidebar.fontHints.${found.hintKey}`)}</span>
+        )}
       </span>
     </div>
   );
 }
 
-// Combined font list — module-level constant, avoids spreading on every render
-const ALL_FONT_OPTIONS = [...FONT_BASE_OPTIONS, ...FONT_CORSIVO_OPTIONS];
-
 // ── Text size warning logic ───────────────────────────────────────────────────
-function getSizeWarning(dimensione_nome, layer_height, fontValue) {
+function getSizeWarning(dimensione_nome, layer_height, fontValue, t) {
   const font = ALL_FONT_OPTIONS.find((o) => o.value === fontValue);
   const rating = font?.rating ?? 'safe';
 
@@ -77,19 +83,30 @@ function getSizeWarning(dimensione_nome, layer_height, fontValue) {
   if (dimensione_nome < minDanger) {
     return {
       level: 'danger',
-      msg: `⚠️ ${dimensione_nome}mm — trop petit (min recommandé : ${minDanger.toFixed(1)}mm à ${layer_height}mm layer)`,
+      msg: t('sidebar.warnings.tooSmall', {
+        size: dimensione_nome,
+        min: minDanger.toFixed(1),
+        layer: layer_height,
+      }),
     };
   }
   if (rating === 'danger' && dimensione_nome < minThinFont) {
     return {
       level: 'warn',
-      msg: `⚠️ ${dimensione_nome}mm avec police à empattements fins — risque strokes < 0.4mm. Tenter ≥ ${minThinFont.toFixed(0)}mm ou changer de police.`,
+      msg: t('sidebar.warnings.thinFont', {
+        size: dimensione_nome,
+        min: minThinFont.toFixed(0),
+        layer: layer_height,
+      }),
     };
   }
   if (dimensione_nome < minSafe) {
     return {
       level: 'warn',
-      msg: `⚠️ ${dimensione_nome}mm — petite taille à ${layer_height}mm layer height. Vérifier l'aperçu.`,
+      msg: t('sidebar.warnings.smallSize', {
+        size: dimensione_nome,
+        layer: layer_height,
+      }),
     };
   }
   return null;
@@ -98,27 +115,29 @@ function getSizeWarning(dimensione_nome, layer_height, fontValue) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function Sidebar({ params, onUpdateParam, onGenerate, onDownload, onOpenInBambu, loading, bambuLoading, downloadingFormat }) {
+  const { t } = useTranslation();
   const p = params;
   const u = onUpdateParam;
 
   const sizeWarn = useMemo(
-    () => getSizeWarning(p.dimensione_nome, p.layer_height, p.font_corsivo),
-    [p.dimensione_nome, p.layer_height, p.font_corsivo]
+    () => getSizeWarning(p.dimensione_nome, p.layer_height, p.font_corsivo, t),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [p.dimensione_nome, p.layer_height, p.font_corsivo, t]
   );
 
   return (
     <aside className="w-80 shrink-0 flex flex-col border-r border-app-border bg-app-panel">
       {/* Header sidebar */}
       <div className="px-4 py-3 border-b border-app-border">
-        <span className="section-label">Paramètres du modèle</span>
+        <span className="section-label">{t('sidebar.title')}</span>
       </div>
 
       {/* Scrollable param area */}
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
 
         {/* ── Texte ────────────────────────────────────────── */}
-        <ParamGroup title="Texte" defaultOpen={true}>
-          <Field label="Prénom / Texte">
+        <ParamGroup title={t('sidebar.groups.text')} defaultOpen={true}>
+          <Field label={t('sidebar.fields.name')}>
             <TextInput
               value={p.nome}
               onChange={(v) => u('nome', v)}
@@ -126,7 +145,7 @@ export default function Sidebar({ params, onUpdateParam, onGenerate, onDownload,
             />
           </Field>
 
-          <Field label="Police — base (grande lettre)">
+          <Field label={t('sidebar.fields.fontBase')}>
             <SelectInput
               value={p.font_base}
               onChange={(v) => u('font_base', v)}
@@ -135,7 +154,7 @@ export default function Sidebar({ params, onUpdateParam, onGenerate, onDownload,
             <FontBadge options={FONT_BASE_OPTIONS} value={p.font_base} />
           </Field>
 
-          <Field label="Police — cursive (nom)">
+          <Field label={t('sidebar.fields.fontCursive')}>
             <SelectInput
               value={p.font_corsivo}
               onChange={(v) => u('font_corsivo', v)}
@@ -147,23 +166,23 @@ export default function Sidebar({ params, onUpdateParam, onGenerate, onDownload,
           <Toggle
             value={p.iniziale_maiuscola}
             onChange={(v) => u('iniziale_maiuscola', v)}
-            label="Majuscule initiale"
+            label={t('sidebar.fields.uppercase')}
           />
           <Toggle
             value={p.mostra_base}
             onChange={(v) => u('mostra_base', v)}
-            label="Afficher la base (grande lettre)"
+            label={t('sidebar.fields.showBase')}
           />
           <Toggle
             value={p.mostra_nome}
             onChange={(v) => u('mostra_nome', v)}
-            label="Afficher le nom"
+            label={t('sidebar.fields.showName')}
           />
         </ParamGroup>
 
         {/* ── Dimensions ───────────────────────────────────── */}
-        <ParamGroup title="Dimensions (mm)">
-          <Field label="Hauteur de couche (layer height)" hint="Affecte les avertissements de taille minimum">
+        <ParamGroup title={t('sidebar.groups.dimensions')}>
+          <Field label={t('sidebar.fields.layerHeight')} hint={t('sidebar.fields.layerHeightHint')}>
             <NumberInput
               value={p.layer_height}
               onChange={(v) => u('layer_height', v)}
@@ -171,7 +190,7 @@ export default function Sidebar({ params, onUpdateParam, onGenerate, onDownload,
             />
           </Field>
 
-          <Field label="Hauteur de la base" hint="Épaisseur de la grande lettre">
+          <Field label={t('sidebar.fields.baseHeight')} hint={t('sidebar.fields.baseHeightHint')}>
             <NumberInput
               value={p.altezza_base}
               onChange={(v) => u('altezza_base', v)}
@@ -179,7 +198,7 @@ export default function Sidebar({ params, onUpdateParam, onGenerate, onDownload,
             />
           </Field>
 
-          <Field label="Profondeur de gravure">
+          <Field label={t('sidebar.fields.engravingDepth')}>
             <NumberInput
               value={p.profondita_incisione}
               onChange={(v) => u('profondita_incisione', v)}
@@ -187,7 +206,7 @@ export default function Sidebar({ params, onUpdateParam, onGenerate, onDownload,
             />
           </Field>
 
-          <Field label="Taille lettre de base">
+          <Field label={t('sidebar.fields.letterSize')}>
             <NumberInput
               value={p.dimensione_lettera}
               onChange={(v) => u('dimensione_lettera', v)}
@@ -195,7 +214,7 @@ export default function Sidebar({ params, onUpdateParam, onGenerate, onDownload,
             />
           </Field>
 
-          <Field label="Taille du nom" hint="Réduire si le nom dépasse la lettre de base">
+          <Field label={t('sidebar.fields.nameSize')} hint={t('sidebar.fields.nameSizeHint')}>
             <NumberInput
               value={p.dimensione_nome}
               onChange={(v) => u('dimensione_nome', v)}
@@ -213,7 +232,7 @@ export default function Sidebar({ params, onUpdateParam, onGenerate, onDownload,
             )}
           </Field>
 
-          <Field label="Épaisseur nom en relief" hint="Si nom en solide">
+          <Field label={t('sidebar.fields.nameRelief')} hint={t('sidebar.fields.nameReliefHint')}>
             <NumberInput
               value={p.altezza_nome_solido}
               onChange={(v) => u('altezza_nome_solido', v)}
@@ -221,7 +240,7 @@ export default function Sidebar({ params, onUpdateParam, onGenerate, onDownload,
             />
           </Field>
 
-          <Field label="Décalage horizontal du nom (X)">
+          <Field label={t('sidebar.fields.offsetX')}>
             <NumberInput
               value={p.offset_nome_x}
               onChange={(v) => u('offset_nome_x', v)}
@@ -229,7 +248,7 @@ export default function Sidebar({ params, onUpdateParam, onGenerate, onDownload,
             />
           </Field>
 
-          <Field label="Décalage vertical du nom (Y)">
+          <Field label={t('sidebar.fields.offsetY')}>
             <NumberInput
               value={p.offset_nome_y}
               onChange={(v) => u('offset_nome_y', v)}
@@ -237,7 +256,7 @@ export default function Sidebar({ params, onUpdateParam, onGenerate, onDownload,
             />
           </Field>
 
-          <Field label="Tolérance gravure">
+          <Field label={t('sidebar.fields.tolerance')}>
             <NumberInput
               value={p.tolleranza}
               onChange={(v) => u('tolleranza', v)}
@@ -245,7 +264,7 @@ export default function Sidebar({ params, onUpdateParam, onGenerate, onDownload,
             />
           </Field>
 
-          <Field label="Marge coupe bord inférieur">
+          <Field label={t('sidebar.fields.cutMargin')}>
             <NumberInput
               value={p.margine_taglio}
               onChange={(v) => u('margine_taglio', v)}
@@ -253,7 +272,7 @@ export default function Sidebar({ params, onUpdateParam, onGenerate, onDownload,
             />
           </Field>
 
-          <Field label="Coupe du bas" hint="0 = courbe intacte · 30 = plat haut">
+          <Field label={t('sidebar.fields.cutBase')} hint={t('sidebar.fields.cutBaseHint')}>
             <NumberInput
               value={p.taglio_base}
               onChange={(v) => u('taglio_base', v)}
@@ -263,24 +282,24 @@ export default function Sidebar({ params, onUpdateParam, onGenerate, onDownload,
         </ParamGroup>
 
         {/* ── Finitions d'impression ───────────────────────── */}
-        <ParamGroup title="Finitions d'impression">
+        <ParamGroup title={t('sidebar.groups.finitions')}>
 
           {/* ── Fuzzy Skin ── */}
           <Toggle
             value={p.fuzzy_skin}
             onChange={(v) => u('fuzzy_skin', v)}
-            label="Fuzzy Skin (texture rugueuse)"
+            label={t('sidebar.fields.fuzzySkin')}
           />
           {p.fuzzy_skin && (
             <>
-              <Field label="Épaisseur Fuzzy" hint="mm — amplitude de la texture">
+              <Field label={t('sidebar.fields.fuzzyThickness')} hint={t('sidebar.fields.fuzzyThicknessHint')}>
                 <NumberInput
                   value={p.fuzzy_skin_thickness}
                   onChange={(v) => u('fuzzy_skin_thickness', v)}
                   min={0.1} max={3} step={0.1}
                 />
               </Field>
-              <Field label="Distance entre points" hint="mm — densité de la texture">
+              <Field label={t('sidebar.fields.fuzzyPointDist')} hint={t('sidebar.fields.fuzzyPointDistHint')}>
                 <NumberInput
                   value={p.fuzzy_skin_point_distance}
                   onChange={(v) => u('fuzzy_skin_point_distance', v)}
@@ -294,14 +313,16 @@ export default function Sidebar({ params, onUpdateParam, onGenerate, onDownload,
           <Toggle
             value={p.ironing_top}
             onChange={(v) => u('ironing_top', v)}
-            label="Ironing surface haute"
+            label={t('sidebar.fields.ironing')}
           />
 
           {/* Info banner — slicer settings embedded in 3MF */}
           {(p.fuzzy_skin || p.ironing_top) && (
             <div className="rounded px-2 py-1.5 text-[11px] leading-[1.4] bg-[#1e3a5f]/60 border border-blue-500/30 text-blue-300">
-              ℹ️ Réglages slicer — intégrés dans l'export <strong>3MF</strong> pour BambuStudio.
-              Non visibles dans la preview 3D.
+              <Trans
+                i18nKey="sidebar.fields.slicerBanner"
+                components={{ 1: <strong /> }}
+              />
             </div>
           )}
 
@@ -310,10 +331,10 @@ export default function Sidebar({ params, onUpdateParam, onGenerate, onDownload,
             <Toggle
               value={p.chanfrein_haut}
               onChange={(v) => u('chanfrein_haut', v)}
-              label="Chanfrein bord supérieur"
+              label={t('sidebar.fields.chamfer')}
             />
             {p.chanfrein_haut && (
-              <Field label="Taille chanfrein" hint="mm — biseau à 45° en haut de la lettre">
+              <Field label={t('sidebar.fields.chamferSize')} hint={t('sidebar.fields.chamferSizeHint')}>
                 <NumberInput
                   value={p.chanfrein_taille}
                   onChange={(v) => u('chanfrein_taille', v)}
@@ -326,15 +347,15 @@ export default function Sidebar({ params, onUpdateParam, onGenerate, onDownload,
         </ParamGroup>
 
         {/* ── Couleurs ─────────────────────────────────────── */}
-        <ParamGroup title="Couleurs d'impression">
-          <Field label="Couleur de la base" hint="Filament 1 (grande lettre)">
+        <ParamGroup title={t('sidebar.groups.colors')}>
+          <Field label={t('sidebar.fields.colorBase')} hint={t('sidebar.fields.colorBaseHint')}>
             <ColorInput
               value={p.colore_base}
               onChange={(v) => u('colore_base', v)}
             />
           </Field>
 
-          <Field label="Couleur du nom" hint="Filament 2 (texte)">
+          <Field label={t('sidebar.fields.colorName')} hint={t('sidebar.fields.colorNameHint')}>
             <ColorInput
               value={p.colore_nome}
               onChange={(v) => u('colore_nome', v)}
@@ -353,14 +374,14 @@ export default function Sidebar({ params, onUpdateParam, onGenerate, onDownload,
           {loading ? (
             <>
               <Spinner />
-              Génération…
+              {t('sidebar.actions.generating')}
             </>
           ) : (
             <>
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="square" d="M12 4v16m8-8H4" />
               </svg>
-              Générer
+              {t('sidebar.actions.generate')}
             </>
           )}
         </button>
@@ -394,7 +415,7 @@ export default function Sidebar({ params, onUpdateParam, onGenerate, onDownload,
           {bambuLoading ? (
             <>
               <Spinner />
-              Ouverture…
+              {t('sidebar.actions.openingBambu')}
             </>
           ) : (
             <>
@@ -402,7 +423,7 @@ export default function Sidebar({ params, onUpdateParam, onGenerate, onDownload,
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
               </svg>
-              Ouvrir dans BambuStudio
+              {t('sidebar.actions.openBambu')}
             </>
           )}
         </button>

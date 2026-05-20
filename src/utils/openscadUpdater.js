@@ -20,7 +20,7 @@ const MAX_REDIRECTS = 5;
 
 function assertHttpsUrl(url) {
   if (!url || !String(url).startsWith('https://')) {
-    throw new Error(`Redirection non-HTTPS refusée : ${url}`);
+    throw new Error(`Non-HTTPS redirect rejected: ${url}`);
   }
 }
 
@@ -47,11 +47,11 @@ const ALLOWED_API_HOSTS = new Set([
 function assertAllowedApiHost(url) {
   let hostname;
   try { hostname = new URL(url).hostname; }
-  catch { throw new Error(`URL de redirection invalide : ${url}`); }
+  catch { throw new Error(`Invalid redirect URL: ${url}`); }
   // Allow download hosts too — GitHub API may redirect to CDN for binary downloads
   const allAllowed = new Set([...ALLOWED_API_HOSTS, ...ALLOWED_DOWNLOAD_HOSTS]);
   if (!allAllowed.has(hostname)) {
-    throw new Error(`Hôte de redirection API non autorisé : ${hostname}`);
+    throw new Error(`Unauthorized API redirect host: ${hostname}`);
   }
 }
 
@@ -63,7 +63,7 @@ function httpsGet(url, redirectCount = 0) {
       if ([301, 302, 307, 308].includes(res.statusCode)) {
         res.resume(); // drain body to release socket before following redirect
         if (redirectCount >= MAX_REDIRECTS) {
-          return reject(new Error(`Trop de redirections (max ${MAX_REDIRECTS})`));
+          return reject(new Error(`Too many redirects (max ${MAX_REDIRECTS})`));
         }
         return resolve(httpsGet(res.headers.location, redirectCount + 1));
       }
@@ -72,7 +72,7 @@ function httpsGet(url, redirectCount = 0) {
       res.on('data', (chunk) => {
         totalBytes += chunk.length;
         if (totalBytes > MAX_API_BYTES) {
-          res.destroy(new Error('Réponse GitHub API trop grande (> 1MB)'));
+          res.destroy(new Error('GitHub API response too large (> 1MB)'));
           return;
         }
         chunks.push(chunk);
@@ -103,18 +103,18 @@ async function checkForOpenSCADUpdate(app) {
   try {
     release = JSON.parse(body);
   } catch {
-    throw new Error('Réponse GitHub API invalide (JSON malformé)');
+    throw new Error('Invalid GitHub API response (malformed JSON)');
   }
 
   if (!release || typeof release !== 'object') {
-    throw new Error('Réponse GitHub API invalide (structure inattendue)');
+    throw new Error('Invalid GitHub API response (unexpected structure)');
   }
 
   const latestVersion = normalizeVersion(release.tag_name ?? '');
   const currentNorm = normalizeVersion(currentVersion || '');
 
   if (!latestVersion) {
-    throw new Error('Impossible de lire la version depuis GitHub API');
+    throw new Error('Could not read version from GitHub API');
   }
 
   // hasUpdate = false when not installed OR version unreadable.
@@ -130,7 +130,7 @@ async function checkForOpenSCADUpdate(app) {
 
   return {
     success: true,
-    currentVersion: currentNorm || 'non installé',
+    currentVersion: currentNorm || 'not installed',
     latestVersion,
     hasUpdate,
     downloadUrl: assetUrl,
@@ -155,7 +155,7 @@ function pickAssetForPlatform(assets) {
 // ─── Download update ──────────────────────────────────────────────────────────
 
 async function downloadOpenSCADUpdate(app, downloadUrl, onProgress) {
-  if (!downloadUrl) throw new Error('URL de téléchargement manquante');
+  if (!downloadUrl) throw new Error('Missing download URL');
 
   // Always download to tmpdir — never touch the running binary.
   // Caller is responsible for prompting the user to run the installer.
@@ -167,7 +167,7 @@ async function downloadOpenSCADUpdate(app, downloadUrl, onProgress) {
   // Integrity check — reject empty files (truncated download, network error)
   const stat = await fs.promises.stat(tmpFile);
   if (stat.size === 0) {
-    throw new Error('Fichier téléchargé vide — téléchargement incomplet');
+    throw new Error('Downloaded file is empty — incomplete download');
   }
 
   // CHECKSUM-1: Compute SHA256 — log for manual auditability
@@ -190,7 +190,7 @@ async function downloadFile(url, dest, onProgress) {
   res.on('data', (chunk) => {
     received += chunk.length;
     if (received > MAX_DOWNLOAD_BYTES) {
-      res.destroy(new Error('Téléchargement trop grand (> 500 MB) — abandon'));
+      res.destroy(new Error('Download too large (> 500 MB) — aborting'));
       return;
     }
     if (onProgress && total) {
@@ -213,9 +213,9 @@ async function downloadFile(url, dest, onProgress) {
 function assertAllowedHost(url) {
   let hostname;
   try { hostname = new URL(url).hostname; }
-  catch { throw new Error(`URL de redirection invalide : ${url}`); }
+  catch { throw new Error(`Invalid redirect URL: ${url}`); }
   if (!ALLOWED_DOWNLOAD_HOSTS.has(hostname)) {
-    throw new Error(`Hôte de redirection non autorisé : ${hostname}`);
+    throw new Error(`Unauthorized download redirect host: ${hostname}`);
   }
 }
 
@@ -227,7 +227,7 @@ function followRedirects(url, redirectCount = 0) {
       if ([301, 302, 307, 308].includes(res.statusCode)) {
         res.resume(); // drain redirect body to release socket
         if (redirectCount >= MAX_REDIRECTS) {
-          return reject(new Error(`Trop de redirections lors du téléchargement (max ${MAX_REDIRECTS})`));
+          return reject(new Error(`Too many redirects during download (max ${MAX_REDIRECTS})`));
         }
         return resolve(followRedirects(res.headers.location, redirectCount + 1));
       }

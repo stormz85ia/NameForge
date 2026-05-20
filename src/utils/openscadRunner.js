@@ -157,7 +157,7 @@ async function buildFontconfigFile(app) {
     const abs = path.resolve(p);
     // Allow exact match (path IS the root) or prefix match with separator
     if (!trustedRoots.some((r) => abs === r.slice(0, -1) || abs.startsWith(r))) {
-      throw new Error(`Chemin fontconfig non autorisé : ${abs}`);
+      throw new Error(`Unauthorized fontconfig path: ${abs}`);
     }
   };
   assertTrusted(ourFontsPath);
@@ -241,7 +241,9 @@ async function generateModel(app, scadFile, params, format = 'stl', suffix = 'ou
       } else {
         proc.kill('SIGKILL');
       }
-      safeReject(new Error('OpenSCAD timeout (120 s) — génération annulée'));
+      const timeoutErr = new Error('OpenSCAD timeout (120 s)');
+      timeoutErr.errorKey = 'errors.openscadTimeout';
+      safeReject(timeoutErr);
     }, 120_000);
 
     // PERF-3: stdout drained but not stored — OpenSCAD writes nothing useful there for export.
@@ -253,7 +255,7 @@ async function generateModel(app, scadFile, params, format = 'stl', suffix = 'ou
 
     proc.on('error', (err) => {
       clearTimeout(timer);
-      safeReject(new Error(`Impossible de lancer OpenSCAD : ${err.message}`));
+      safeReject(new Error(`OpenSCAD spawn failed: ${err.message}`));
     });
 
     proc.on('close', (code) => {
@@ -266,7 +268,7 @@ async function generateModel(app, scadFile, params, format = 'stl', suffix = 'ou
         const detail = raw
           .replace(/\x1b\[[0-9;]*[A-Za-z]/g, '') // strip ANSI codes
           .replace(/\r/g, '');                     // normalize line endings
-        safeReject(new Error(`OpenSCAD a échoué (code ${code}) : ${detail}`));
+        safeReject(new Error(`OpenSCAD failed (code ${code}): ${detail}`));
       }
     });
   });

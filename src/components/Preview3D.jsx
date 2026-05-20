@@ -1,4 +1,6 @@
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n from '../i18n/index.js';
 import * as THREE from 'three';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -16,6 +18,7 @@ function getBambuTexture() {
 
 // previewData = { baseStlPath, nomeStlPath, baseColor, nomeColor }
 export default function Preview3D({ previewData, loading, onError }) {
+  const { t } = useTranslation();
   const mountRef = useRef(null);
   const r = useRef({
     scene: null, camera: null, renderer: null,
@@ -146,7 +149,7 @@ export default function Preview3D({ previewData, loading, onError }) {
     const myGen = ++r.current.loadGen;
     loadMeshes(r.current, previewData, myGen).catch((err) => {
       console.error('Preview3D: erreur chargement', err);
-      if (onError) onError(`Erreur aperçu 3D : ${String(err?.message ?? err)}`);
+      if (onError) onError(i18n.t('status.preview3dError', { msg: String(err?.message ?? err) }));
     });
   }, [previewData, onError]);
 
@@ -155,15 +158,15 @@ export default function Preview3D({ previewData, loading, onError }) {
       {loading && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm">
           <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin mb-3" />
-          <span className="text-[13px] font-bold text-on-dark">Génération OpenSCAD…</span>
-          <span className="text-[11px] text-stone mt-1">Peut prendre 5–15 secondes</span>
+          <span className="text-[13px] font-bold text-on-dark">{t('preview.generating')}</span>
+          <span className="text-[11px] text-stone mt-1">{t('preview.generatingHint')}</span>
         </div>
       )}
 
       {!previewData && !loading && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <p className="text-stone text-[13px]">
-            Cliquez sur <strong className="text-on-dark">Générer</strong> pour créer le modèle
+            {t('preview.emptyHint_before')}<strong className="text-on-dark">{t('preview.emptyHintAction')}</strong>{t('preview.emptyHint_after')}
           </p>
         </div>
       )}
@@ -171,9 +174,9 @@ export default function Preview3D({ previewData, loading, onError }) {
       {previewData && (
         <div className="absolute top-3 right-3 pointer-events-none">
           <div className="bg-black/50 text-stone text-[11px] px-2 py-1 rounded-sm space-y-0.5">
-            <div>Clic + drag → Rotation</div>
-            <div>Scroll → Zoom</div>
-            <div>Clic droit + drag → Pan</div>
+            <div>{t('preview.rotate')}</div>
+            <div>{t('preview.zoom')}</div>
+            <div>{t('preview.pan')}</div>
           </div>
         </div>
       )}

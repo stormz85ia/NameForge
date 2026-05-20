@@ -103,7 +103,7 @@ function assertInTmpdir(filePath) {
   const parent = path.dirname(filePath);
   const base = path.basename(filePath);
   if (!base || base === '.' || base === '..' || /[/\\]/.test(base)) {
-    throw new Error(`Nom de fichier invalide : ${base}`);
+    throw new Error(`Invalid filename: ${base}`);
   }
 
   let resolved;
@@ -119,7 +119,7 @@ function assertInTmpdir(filePath) {
   }
 
   if (!norm(resolved).startsWith(norm(tmp) + path.sep) && norm(resolved) !== norm(tmp)) {
-    throw new Error(`Accès refusé : chemin hors du répertoire temporaire (${resolved})`);
+    throw new Error(`Access denied: path outside temp directory (${resolved})`);
   }
 }
 
@@ -130,39 +130,41 @@ ipcMain.handle('generate-model', async (event, params, format = 'stl', suffix = 
   try {
     // ── Input validation ───────────────────────────────────────────────────────
     if (!params || typeof params !== 'object' || Array.isArray(params)) {
-      throw new Error('params invalide : objet attendu');
+      throw new Error('Invalid params: plain object expected');
     }
     // PP-1: strip prototype chain — prevents prototype-polluted props from leaking into generation
     const safeParams = Object.assign(Object.create(null), params);
     const safeFormat = String(format).toLowerCase();
     if (!ALLOWED_FORMATS.has(safeFormat)) {
-      throw new Error(`Format non supporté : ${safeFormat}`);
+      throw new Error(`Unsupported format: ${safeFormat}`);
     }
     const safeSuffix = sanitizeSuffix(suffix);
 
     const scadFile = getScadFilePath();
 
     if (!fs.existsSync(scadFile)) {
-      throw new Error(`Fichier SCAD introuvable : ${scadFile}`);
+      const e = new Error(`SCAD file not found: ${scadFile}`);
+      e.errorKey = 'errors.scadNotFound';
+      throw e;
     }
 
     const openscadBin = getOpenSCADPath(app);
     if (!fs.existsSync(openscadBin)) {
-      throw new Error(
-        `OpenSCAD introuvable dans les resources. Lancez "npm run download-openscad".`
-      );
+      const e = new Error('OpenSCAD not found in resources. Run "npm run download-openscad".');
+      e.errorKey = 'errors.openscadNotFound';
+      throw e;
     }
 
     const safeSend = (ch, data) => { if (!event.sender.isDestroyed()) event.sender.send(ch, data); };
-    safeSend('generation-progress', { status: 'running', message: 'Génération en cours…' });
+    safeSend('generation-progress', { status: 'running', messageKey: 'status.generating' });
 
     const result = await generateModel(app, scadFile, safeParams, safeFormat, safeSuffix);
 
-    safeSend('generation-progress', { status: 'done', message: 'Terminé' });
+    safeSend('generation-progress', { status: 'done', messageKey: 'status.generated' });
     return { success: true, outputPath: result.outputPath };
   } catch (err) {
     if (!event.sender.isDestroyed()) event.sender.send('generation-progress', { status: 'error', message: err.message });
-    return { success: false, error: err.message };
+    return { success: false, error: err.message, errorKey: err.errorKey };
   }
 });
 
@@ -175,18 +177,22 @@ ipcMain.handle('read-file', async (event, filePath) => {
 });
 
 // Save generated model to user-chosen location
-ipcMain.handle('save-model', async (event, sourcePath, format) => {
+ipcMain.handle('save-model', async (event, sourcePath, format, dialogTitle) => {
   // sourcePath must be within tmpdir (generated files only)
   assertInTmpdir(sourcePath);
 
   const safeFormat = String(format).toLowerCase();
   const ext = ALLOWED_FORMATS.has(safeFormat) ? safeFormat : 'stl';
+  // Sanitize renderer-supplied title — strip control chars, clamp length
+  const safeTitle = typeof dialogTitle === 'string'
+    ? dialogTitle.replace(/[\x00-\x1f\x7f]/g, '').slice(0, 100)
+    : `Save ${ext.toUpperCase()} model`;
 
-  if (!mainWindow) return { success: false, error: 'Fenêtre principale fermée' };
+  if (!mainWindow) return { success: false, errorKey: 'errors.windowClosed' };
 
   try {
     const { canceled, filePath } = await dialog.showSaveDialog(mainWindow, {
-      title: `Enregistrer le modèle ${ext.toUpperCase()}`,
+      title: safeTitle,
       defaultPath: `nameforge_model.${ext}`,
       filters: [{ name: ext.toUpperCase(), extensions: [ext] }],
     });
@@ -232,15 +238,15 @@ ipcMain.handle('download-openscad-update', async (event, downloadUrl) => {
   // SEC-5: Validate URL at IPC boundary — reject non-HTTPS and untrusted hosts
   // before passing to internal functions. Defence-in-depth against renderer compromise.
   if (!downloadUrl || !String(downloadUrl).startsWith('https://')) {
-    return { success: false, error: `URL invalide ou non-HTTPS : ${downloadUrl}` };
+    return { success: false, error: `Invalid or non-HTTPS URL: ${downloadUrl}` };
   }
   try {
     const { hostname } = new URL(String(downloadUrl));
     if (!ALLOWED_DOWNLOAD_HOSTS_IPC.has(hostname)) {
-      return { success: false, error: `Hôte non autorisé : ${hostname}` };
+      return { success: false, error: `Unauthorized host: ${hostname}` };
     }
   } catch {
-    return { success: false, error: `URL malformée : ${downloadUrl}` };
+    return { success: false, error: `Malformed URL: ${downloadUrl}` };
   }
   try {
     const onProgress = (percent) => {
@@ -266,10 +272,7 @@ ipcMain.handle('open-in-bambu', async (event, baseStlPath, nomeStlPath) => {
 
   const bambuExeRaw = candidates.find((p) => fs.existsSync(p));
   if (!bambuExeRaw) {
-    return {
-      success: false,
-      error: 'BambuStudio introuvable. Vérifiez l\'installation dans Program Files.',
-    };
+    return { success: false, errorKey: 'errors.bambuNotFound' };
   }
 
   // LOW-3: Validate resolved exe path stays within trusted roots.
@@ -286,7 +289,7 @@ ipcMain.handle('open-in-bambu', async (event, baseStlPath, nomeStlPath) => {
   ];
   const normBambu = bambuExe.toLowerCase();
   if (!trustedRoots.some((r) => normBambu.startsWith(r.toLowerCase()))) {
-    return { success: false, error: 'Chemin BambuStudio suspect — accès refusé.' };
+    return { success: false, errorKey: 'errors.bambuPathSuspect' };
   }
 
   const args = [];
@@ -299,7 +302,7 @@ ipcMain.handle('open-in-bambu', async (event, baseStlPath, nomeStlPath) => {
   }
 
   if (args.length === 0) {
-    return { success: false, error: 'Aucun fichier STL valide à ouvrir dans BambuStudio.' };
+    return { success: false, errorKey: 'errors.bambuNoStl' };
   }
 
   try {
@@ -307,7 +310,7 @@ ipcMain.handle('open-in-bambu', async (event, baseStlPath, nomeStlPath) => {
     child.unref();
     return {
       success: true,
-      warning: skipped > 0 ? `${skipped} fichier(s) ignoré(s) — chemin invalide ou introuvable` : undefined,
+      warning: skipped > 0 ? `${skipped} file(s) skipped — invalid path or not found` : undefined,
     };
   } catch (err) {
     return { success: false, error: err.message };
@@ -340,7 +343,7 @@ ipcMain.handle('patch-3mf', async (event, filePath, settings) => {
 
 // App auto-updater (electron-updater via GitHub Releases)
 ipcMain.handle('check-app-update', async () => {
-  if (isDev) return { success: false, message: 'Désactivé en développement' };
+  if (isDev) return { success: false, message: 'Disabled in development' };
   try {
     const { autoUpdater } = require('electron-updater');
     // Register a silent error handler to prevent unhandled EventEmitter errors

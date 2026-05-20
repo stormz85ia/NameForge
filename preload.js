@@ -17,8 +17,8 @@ contextBridge.exposeInMainWorld('nameforge', {
     ipcRenderer.invoke('read-file', filePath),
 
   // Show save dialog and copy generated file
-  saveModel: (sourcePath, format) =>
-    ipcRenderer.invoke('save-model', sourcePath, format),
+  saveModel: (sourcePath, format, dialogTitle) =>
+    ipcRenderer.invoke('save-model', sourcePath, format, dialogTitle),
 
   // OpenSCAD version management
   getOpenSCADVersion: () =>
@@ -41,10 +41,10 @@ contextBridge.exposeInMainWorld('nameforge', {
     try {
       const { hostname } = new URL(String(downloadUrl));
       if (!ALLOWED_DOWNLOAD_HOSTS.has(hostname)) {
-        return Promise.reject(new Error(`[preload] hôte non autorisé : ${hostname}`));
+        return Promise.reject(new Error(`[preload] unauthorized host: ${hostname}`));
       }
     } catch {
-      return Promise.reject(new Error('[preload] URL malformée'));
+      return Promise.reject(new Error('[preload] malformed URL'));
     }
     return ipcRenderer.invoke('download-openscad-update', downloadUrl);
   },
