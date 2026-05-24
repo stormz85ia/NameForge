@@ -5,7 +5,7 @@
 Generate personalized letter + name engravings, export STL/3MF, and open directly in BambuStudio — all in one click.
 
 ![Platform](https://img.shields.io/badge/platform-Windows-blue)
-![Version](https://img.shields.io/badge/version-1.1.0-brightgreen)
+![Version](https://img.shields.io/badge/version-1.1.1-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Electron](https://img.shields.io/badge/Electron-42-47848F)
 
@@ -34,7 +34,7 @@ Generate personalized letter + name engravings, export STL/3MF, and open directl
 
 ## Installation
 
-Download `NameForge Setup 1.1.0.exe` from [Releases](https://github.com/stormz85ia/NameForge/releases) and run it.
+Download `NameForge Setup 1.1.1.exe` from [Releases](https://github.com/stormz85ia/NameForge/releases) and run it.
 
 > **First launch:** NameForge will download OpenSCAD automatically (~70 MB).
 

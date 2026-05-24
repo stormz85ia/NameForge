@@ -167,10 +167,19 @@ if (mostra_base && mostra_nome) {
     }
 }
 else if (mostra_base) {
-    if (incidi_preview) base_incisa(); else base_seule();
+    // Export mode (nome_preview_z==0) : toujours creuser — sinon le creux disparaît
+    if (nome_preview_z == 0 || incidi_preview) base_incisa(); else base_seule();
 }
 else if (mostra_nome) {
-    nom_seul();
+    if (nome_preview_z == 0) {
+        // Export standalone : hauteur = profondita_incisione pour s'emboîter exactement dans le creux
+        color(colore_nome)
+        translate([offset_nome_x, offset_nome_y, 0])
+            linear_extrude(height = profondita_incisione, convexity = 10)
+                shape_nom();
+    } else {
+        nom_seul();
+    }
 }
 else {
     echo("AVERTISSEMENT: mostra_base=0 ET mostra_nome=0 — rien à générer.");

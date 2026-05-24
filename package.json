@@ -1,6 +1,6 @@
 {
   "name": "nameforge",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "description": "Générateur de modèles 3D paramétriques pour MakerWorld",
   "main": "main.js",
